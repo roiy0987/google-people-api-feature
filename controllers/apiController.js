@@ -13,10 +13,7 @@ exports.useGoogleApi = async (req, res, next) => {
     version: "v1",
     auth: oauth2Client,
   });
-  const contactsList = await service.people.connections.list({
-    resourceName: "people/me",
-    personFields: "names,emailAddresses",
-  });
+
   // Creating multiple contacts
 
   for (const contact in contacts) {
@@ -34,7 +31,7 @@ exports.useGoogleApi = async (req, res, next) => {
         ],
         phoneNumbers: [
           {
-            value: contact.value,
+            value: contact.phone,
           },
         ],
         memberships: [
@@ -48,6 +45,7 @@ exports.useGoogleApi = async (req, res, next) => {
       continue;
     }
     await service.people.updateContact({
+      resourceName: contact.resourceName,
       names: [
         {
           givenName: contact.firstName,
@@ -56,7 +54,7 @@ exports.useGoogleApi = async (req, res, next) => {
       ],
       phoneNumbers: [
         {
-          value: contact.value,
+          value: contact.phone,
         },
       ],
       memberships: [
@@ -70,57 +68,6 @@ exports.useGoogleApi = async (req, res, next) => {
       etag: contact.etag,
     });
   }
-  const batchOfContacts = await service.people.batchCreateContacts({
-    requestBody: {
-      contacts: [
-        {
-          contactPerson: {
-            names: [
-              {
-                givenName: "Hema",
-                displayName: "Boy",
-                familyName: "Hello",
-              },
-            ],
-            phoneNumbers: [
-              {
-                value: "0543178632",
-              },
-            ],
-            memberships: [
-              {
-                contactGroupMembership: {
-                  contactGroupResourceName: process.env.GROUPNAME,
-                },
-              },
-            ],
-          },
-        },
-        {
-          contactPerson: {
-            names: [
-              {
-                givenName: "Roie",
-                displayName: "Roie",
-                familyName: "yechi",
-              },
-            ],
-            phoneNumbers: [
-              {
-                value: "0543178634",
-              },
-            ],
-            memberships: [
-              {
-                contactGroupMembership: {
-                  contactGroupResourceName: process.env.GROUPNAME,
-                },
-              },
-            ],
-          },
-        },
-      ],
-    },
-  });
+
   res.redirect("/");
 };
