@@ -1,22 +1,75 @@
 const { google } = require("googleapis");
 const { people } = require("googleapis/build/src/apis/people");
-require("dotenv").config({ path: __dirname + "./.env" });
-
-const getOAuthClient = () => {
-  return new google.auth.OAuth2(
-    process.env.clientId,
-    process.env.clientSecret,
-    process.env.redirectUrl
-  );
-};
+const oauth2 = require("../modules/oAuth2Client");
 
 exports.useGoogleApi = async (req, res, next) => {
   const code = req.query.code;
-  const oauth2Client = await getOAuthClient();
+  const contacts = req.body.contacts;
+  const oauth2Client = oauth2.getInstance();
+  // Exchanging the "code" for a access/refresh token
   const { tokens } = await oauth2Client.getToken(code);
   oauth2Client.setCredentials(tokens);
-  const service = google.people({ version: "v1", auth: oauth2Client });
+  const service = google.people({
+    version: "v1",
+    auth: oauth2Client,
+  });
+  const contactsList = await service.people.connections.list({
+    resourceName: "people/me",
+    personFields: "names,emailAddresses",
+  });
   // Creating multiple contacts
+
+  for (const contact in contacts) {
+    const searchIfExist = service.people.searchContacts({
+      query: contact.firstName,
+      readMask: "names",
+    });
+    if (!searchIfExist) {
+      await service.people.createContact({
+        names: [
+          {
+            givenName: contact.firstName,
+            familyName: contact.familyName,
+          },
+        ],
+        phoneNumbers: [
+          {
+            value: contact.value,
+          },
+        ],
+        memberships: [
+          {
+            contactGroupMembership: {
+              contactGroupResourceName: process.env.GROUPNAME,
+            },
+          },
+        ],
+      });
+      continue;
+    }
+    await service.people.updateContact({
+      names: [
+        {
+          givenName: contact.firstName,
+          familyName: contact.familyName,
+        },
+      ],
+      phoneNumbers: [
+        {
+          value: contact.value,
+        },
+      ],
+      memberships: [
+        {
+          contactGroupMembership: {
+            contactGroupResourceName: process.env.GROUPNAME,
+          },
+        },
+      ],
+      // etag is required for updating a contact?
+      etag: contact.etag,
+    });
+  }
   const batchOfContacts = await service.people.batchCreateContacts({
     requestBody: {
       contacts: [
@@ -27,6 +80,18 @@ exports.useGoogleApi = async (req, res, next) => {
                 givenName: "Hema",
                 displayName: "Boy",
                 familyName: "Hello",
+              },
+            ],
+            phoneNumbers: [
+              {
+                value: "0543178632",
+              },
+            ],
+            memberships: [
+              {
+                contactGroupMembership: {
+                  contactGroupResourceName: process.env.GROUPNAME,
+                },
               },
             ],
           },
@@ -40,22 +105,21 @@ exports.useGoogleApi = async (req, res, next) => {
                 familyName: "yechi",
               },
             ],
+            phoneNumbers: [
+              {
+                value: "0543178634",
+              },
+            ],
+            memberships: [
+              {
+                contactGroupMembership: {
+                  contactGroupResourceName: process.env.GROUPNAME,
+                },
+              },
+            ],
           },
         },
       ],
-    },
-  });
-  const contactsList = await service.people.connections.list({
-    resourceName: "people/me",
-    personFields: "names,emailAddresses",
-  });
-  const names = contactsList.data.connections.map((person) => {
-    return person.resourceName;
-  });
-  const addingContactsToGroup = await service.contactGroups.members.modify({
-    resourceName: "contactGroups/797ededb0fa2424f",
-    requestBody: {
-      resourceNamesToAdd: names,
     },
   });
   res.redirect("/");
