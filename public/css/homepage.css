@@ -1,0 +1,24 @@
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  font-family: "Open Sans", sans-serif;
+  background-image: url("https://source.unsplash.com/1920x1080/?landscape");
+}
+a {
+  color: rgb(12, 94, 36);
+}
+.card {
+  display: block;
+  background-color: #fdd158d0;
+  color: rgb(19, 68, 100);
+  padding: 3em;
+  border-radius: 30px;
+  width: 100%;
+  max-width: 350px;
+  margin: auto;
+  height: 100%;
+  max-height: 200px;
+}

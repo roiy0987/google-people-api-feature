@@ -1,4 +1,5 @@
-const oauth2Client = require("../modules/oAuth2Client");
+const oAuth2ClientCreate = require("../modules/oAuth2Client");
+const oAuth2ClientDelete = require("../modules/oAuth2DeleteClient");
 
 const scopes = [
   "https://www.googleapis.com/auth/contacts",
@@ -7,13 +8,22 @@ const scopes = [
 
 exports.getHomepage = async (req, res, next) => {
   // Creating a consent page
-  const authorizationUrl = await oauth2Client.getInstance().generateAuthUrl({
-    access_type: "offline",
-    scope: scopes,
-    state: JSON.stringify({
-      callbackUrl: req.body.callbackUrl,
-      userID: req.body.userid,
-    }),
+  const authorizationUrlForCreate = await oAuth2ClientCreate
+    .getInstance()
+    .generateAuthUrl({
+      access_type: "online",
+      scope: scopes,
+    });
+  const authorizationUrlForDelete = await oAuth2ClientDelete
+    .getInstance()
+    .generateAuthUrl({
+      access_type: "online",
+      scope: scopes,
+    });
+
+  res.render("homepage", {
+    test: authorizationUrlForCreate,
+    test2: authorizationUrlForDelete,
+    path: "/",
   });
-  res.send(`<h1>Hello</h1><a href="${authorizationUrl}">Click me</a>`);
 };

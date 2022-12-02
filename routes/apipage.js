@@ -4,6 +4,7 @@ const router = express.Router();
 
 const apiController = require("../controllers/apiController");
 
-router.get("/testApi", apiController.useGoogleApi);
+router.get("/createContactApi", apiController.useGoogleApi);
+router.get("/deleteContactApi", apiController.deleteGoogleContacts);
 
 module.exports = router;
