@@ -68,6 +68,5 @@ exports.useGoogleApi = async (req, res, next) => {
       etag: contact.etag,
     });
   }
-
   res.redirect("/");
 };
