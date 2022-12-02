@@ -1,12 +1,12 @@
 const { google } = require("googleapis");
 
-class oAuth2ClientCreate {
+class oAuth2ClientDelete {
   constructor() {
     if (this.instance == undefined) {
       this.instance = new google.auth.OAuth2(
         process.env.clientId,
         process.env.clientSecret,
-        process.env.redirectUrlCreateContact
+        process.env.redirectUrlDeleteContact
       );
     }
   }
@@ -15,4 +15,4 @@ class oAuth2ClientCreate {
   }
 }
 
-module.exports = new oAuth2ClientCreate();
+module.exports = new oAuth2ClientDelete();
